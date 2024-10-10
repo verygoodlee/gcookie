@@ -24,7 +24,7 @@ use windows::{Win32::{System::RestartManager::{
 use crate::cookie::{Cookie, SiteCookie};
 use crate::copy::rawcopy;
 
-pub unsafe fn release_file_lock(file_path: &str) -> bool {
+fn release_file_lock(file_path: &str) -> bool {
     let file_path = HSTRING::from(file_path);
     let mut session: u32 = 0;
     let mut session_key_buffer = [0_u16; (CCH_RM_SESSION_KEY as usize) + 1];
