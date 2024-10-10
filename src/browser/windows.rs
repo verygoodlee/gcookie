@@ -24,7 +24,7 @@ use windows::{Win32::{System::RestartManager::{
 use crate::cookie::{Cookie, SiteCookie};
 use crate::copy::rawcopy;
 
-fn release_file_lock(file_path: &str) -> bool {
+unsafe fn release_file_lock(file_path: &str) -> bool {
     let file_path = HSTRING::from(file_path);
     let mut session: u32 = 0;
     let mut session_key_buffer = [0_u16; (CCH_RM_SESSION_KEY as usize) + 1];
@@ -142,7 +142,9 @@ impl Chromium {
         if !path.exists() {
             return Err(rusqlite::Error::InvalidPath(path));
         }
-        release_file_lock(path.as_os_str().to_str().unwrap());
+        unsafe { 
+            release_file_lock(path.as_os_str().to_str().unwrap());
+        }
         let tmp_dir = std::env::temp_dir();
         let mut tmp_cookie: Option<PathBuf> = None;
         let conn_result = Connection::open(&path);
