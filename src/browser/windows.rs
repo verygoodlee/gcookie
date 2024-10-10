@@ -142,7 +142,7 @@ impl Chromium {
         if !path.exists() {
             return Err(rusqlite::Error::InvalidPath(path));
         }
-        release_file_lock(path.as_os_str().as_ref());
+        release_file_lock(path.as_os_str().to_str());
         let tmp_dir = std::env::temp_dir();
         let mut tmp_cookie: Option<PathBuf> = None;
         let conn_result = Connection::open(&path);
