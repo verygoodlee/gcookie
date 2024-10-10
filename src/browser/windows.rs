@@ -30,25 +30,25 @@ pub unsafe fn release_file_lock(file_path: &str) -> bool {
     let mut session_key_buffer = [0_u16; (CCH_RM_SESSION_KEY as usize) + 1];
     let session_key = PWSTR(session_key_buffer.as_mut_ptr());
     let result = RmStartSession(&mut session, 0, session_key);
-    if WIN32_ERROR(result) == ERROR_SUCCESS {
+    if result == ERROR_SUCCESS {
         let result = RmRegisterResources(
             session,
              Some(&[PCWSTR(file_path.as_ptr())]), 
              None, 
              None
         );
-        if WIN32_ERROR(result) == ERROR_SUCCESS {
+        if result == ERROR_SUCCESS {
             let mut pnprocinfoneeded: u32 = 0;
             let mut rgaffectedapps: [RM_PROCESS_INFO; 1] = [RM_PROCESS_INFO{..Default::default()}];
             let mut lpdwrebootreasons: u32 = 0;
             let mut pnprocinfo: u32 = 0;
             let result = RmGetList(session, &mut pnprocinfoneeded, &mut pnprocinfo, Some(rgaffectedapps.as_mut_ptr()), &mut lpdwrebootreasons);
-            if WIN32_ERROR(result) == ERROR_SUCCESS || WIN32_ERROR(result) == ERROR_MORE_DATA {
+            if result == ERROR_SUCCESS || result == ERROR_MORE_DATA {
                 if pnprocinfoneeded > 0 {
                     // If current process does not have enough privileges to close one of
                     // the "offending" processes, you'll get ERROR_FAIL_NOACTION_REBOOT
                     let result = RmShutdown(session, RmForceShutdown.0 as u32, None);
-                    if WIN32_ERROR(result) == ERROR_SUCCESS {
+                    if result == ERROR_SUCCESS {
                         // success
                         RmEndSession(session);
                         return true;
@@ -142,7 +142,7 @@ impl Chromium {
         if !path.exists() {
             return Err(rusqlite::Error::InvalidPath(path));
         }
-        release_file_lock(path.as_os_str().to_str());
+        release_file_lock(path.as_os_str().to_str().unwrap());
         let tmp_dir = std::env::temp_dir();
         let mut tmp_cookie: Option<PathBuf> = None;
         let conn_result = Connection::open(&path);
